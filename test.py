@@ -1,29 +1,17 @@
 import cv2
 
-def CamSetting(filepath=None):
-    if filepath is None:
-        cap = cv2.VideoCapture(0)
-    else:
-        cap = cv2.VideoCapture(filepath)
-    
-    #画像サイズを変更する(MAX:720×480)
-    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-
-    if width > 720 or height > 480:
-        width = 720
-        height = width/height * 480
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, width) # カメラ画像の横幅をwidthに設定
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height) # カメラ画像の縦幅をheightに設定
-
-    return cap
+from util import CamSetting
+from util import CamRecording
 
 #カメラもしくは映像の読み込み
-filepath = "vtest.avi"
-cap = CamSetting()
+filepath = "dorobou.mp4"
+cap = CamSetting(filepath)
 
 #比較用フレーム
 avg = None
+
+#ビデオ保存用インスタンスの生成
+rec = CamRecording(cap)
 
 while True:
     # 1フレームずつ取得する。
@@ -53,10 +41,14 @@ while True:
     # 画像の閾値に輪郭線を入れる
     contours, hierarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    if not contours:
-        print("test", contours)
+    if contours:
+        #検知する動体がある場合にビデオを保存する
+        rec.Recording(frame)
     else:
-        print("test2")
+        del rec
+        #ビデオ保存用インスタンスの生成
+        rec = CamRecording(cap)
+
     frame = cv2.drawContours(frame, contours, -1, (0, 255, 0), 3)
 
     # 結果を出力
