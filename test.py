@@ -4,7 +4,7 @@ from util import CamSetting
 from util import CamRecording
 
 #カメラもしくは映像の読み込み
-filepath = "dorobou.mp4"
+filepath = "./input/motion.mp4"
 cap = CamSetting(filepath)
 
 #比較用フレーム
@@ -12,6 +12,9 @@ avg = None
 
 #ビデオ保存用インスタンスの生成
 rec = CamRecording(cap)
+
+#録画可能状態の監視フラグ
+flag = 0
 
 while True:
     # 1フレームずつ取得する。
@@ -36,20 +39,22 @@ while True:
     #ノイズ除去
     ksize=15
     #メディアンフィルタ
-    thresh = cv2.medianBlur(thresh,ksize)
+    thresh = cv2.medianBlur(thresh, ksize)
 
     # 画像の閾値に輪郭線を入れる
     contours, hierarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    frame = cv2.drawContours(frame, contours, -1, (0, 255, 0), 3)
 
     if contours:
+        #録画停止モードから録画可能モードに遷移する
+        if flag == -1:
+            print("test")
+            #ビデオ保存用インスタンスの生成
+            rec = CamRecording(cap)
         #検知する動体がある場合にビデオを保存する
-        rec.Recording(frame)
+        flag = rec.Recording(frame,True)
     else:
-        del rec
-        #ビデオ保存用インスタンスの生成
-        rec = CamRecording(cap)
-
-    frame = cv2.drawContours(frame, contours, -1, (0, 255, 0), 3)
+        flag = rec.Recording(frame,False)
 
     # 結果を出力
     cv2.imshow("Frame", frame)

@@ -28,10 +28,24 @@ class CamRecording():
         h = int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT))             # カメラの縦幅を取得
         fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')        # 動画保存時のfourcc設定（mp4用）
         file_name = str(uuid.uuid4())[:6]
-        self.video = cv2.VideoWriter(file_name + '.mp4', fourcc, fps, (w, h))  # 動画の仕様（ファイル名、fourcc, FPS, サイズ
+        self.video = cv2.VideoWriter('./output/' + file_name + '.mp4', fourcc, fps, (w, h))  # 動画の仕様（ファイル名、fourcc, FPS, サイズ
 
-    def Recording(self, frame):
-        self.video.write(frame)
+        self._counter = 0
+
+    def Recording(self, frame, recordable=True):
+        if recordable:
+            self.video.write(frame)
+            self._counter = 0
+            return 0
+        else:
+            self._counter += 1
+            #動体検知がなにも検知しない状態が
+            #30フレーム続いたら録画を終了する
+            if self._counter > 30:
+                self.video.release()
+                return -1
+            return 0
+
 
     def __del__(self):
         self.video.release()
