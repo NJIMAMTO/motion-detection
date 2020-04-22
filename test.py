@@ -2,6 +2,7 @@ import configparser
 # ファイルの存在チェック用モジュール
 import os
 import errno
+from distutils.version import StrictVersion
 
 import cv2
 
@@ -18,8 +19,9 @@ if not os.path.exists(config_ini_path):
 config.read(config_ini_path, encoding="utf-8")
 
 filepath = config['SETTING']['InputFile']
-if not os.path.exists(filepath):
-    raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filepath)
+if not(filepath == '' or 'None'):
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filepath)
 output_folder = config['SETTING']['OutputFolder']
 if not os.path.exists(output_folder):
     raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), output_folder)
@@ -65,7 +67,10 @@ while True:
     thresh = cv2.medianBlur(thresh, ksize)
 
     # 画像の閾値に輪郭線を入れる
-    contours, hierarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if StrictVersion(cv2.__version__) >= StrictVersion('4.0'):
+        contours, hierarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    elif StrictVersion(cv2.__version__) < StrictVersion('4.0'):
+        _ ,contours, hierarchy = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     frame = cv2.drawContours(frame, contours, -1, (0, 255, 0), 3)
 
     if contours:
