@@ -21,19 +21,19 @@ def CamSetting(filepath=None):
     return cap
 
 class CamRecording():
-    def __init__(self, camera):
+    def __init__(self, camera, output_folder):
         # 動画ファイル保存用の設定
         fps = int(camera.get(cv2.CAP_PROP_FPS))                    # カメラのFPSを取得
         w = int(camera.get(cv2.CAP_PROP_FRAME_WIDTH))              # カメラの横幅を取得
         h = int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT))             # カメラの縦幅を取得
         fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')        # 動画保存時のfourcc設定（mp4用）
         file_name = str(uuid.uuid4())[:6]
-        self.video = cv2.VideoWriter('./output/' + file_name + '.mp4', fourcc, fps, (w, h))  # 動画の仕様（ファイル名、fourcc, FPS, サイズ
+        self.video = cv2.VideoWriter(output_folder + file_name + '.mp4', fourcc, fps, (w, h))  # 動画の仕様（ファイル名、fourcc, FPS, サイズ
 
         self._counter = 0
 
-    def Recording(self, frame, recordable=True):
-        if recordable:
+    def Recording(self, frame=None):
+        if frame is not None:
             self.video.write(frame)
             self._counter = 0
             return 0

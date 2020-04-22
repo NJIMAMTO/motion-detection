@@ -1,20 +1,43 @@
+import configparser
+# ファイルの存在チェック用モジュール
+import os
+import errno
+
 import cv2
 
 from util import CamSetting
 from util import CamRecording
 
+
+#=======#configファイルの読み込み#=======#
+config = configparser.ConfigParser()
+config_ini_path = "config.ini"
+# 指定したiniファイルが存在しない場合、エラー発生
+if not os.path.exists(config_ini_path):
+    raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), config_ini_path)
+config.read(config_ini_path, encoding="utf-8")
+
+filepath = config['SETTING']['InputFile']
+if not os.path.exists(filepath):
+    raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filepath)
+output_folder = config['SETTING']['OutputFolder']
+if not os.path.exists(output_folder):
+    raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), output_folder)
+kernel_size = config['SETTING']['MedianFilterKernelSize']
+
+#=======#configファイルの読み込み 終わり#=======#
+
 #カメラもしくは映像の読み込み
-filepath = "./input/motion.mp4"
 cap = CamSetting(filepath)
 
 #比較用フレーム
 avg = None
 
 #ビデオ保存用インスタンスの生成
-rec = CamRecording(cap)
+rec = CamRecording(cap, output_folder)
 
 #録画可能状態の監視フラグ
-flag = 0
+flag = -1
 
 while True:
     # 1フレームずつ取得する。
@@ -37,7 +60,7 @@ while True:
     thresh = cv2.threshold(frameDelta, 3, 255, cv2.THRESH_BINARY)[1]
 
     #ノイズ除去
-    ksize=15
+    ksize=int(kernel_size)
     #メディアンフィルタ
     thresh = cv2.medianBlur(thresh, ksize)
 
@@ -48,13 +71,12 @@ while True:
     if contours:
         #録画停止モードから録画可能モードに遷移する
         if flag == -1:
-            print("test")
             #ビデオ保存用インスタンスの生成
-            rec = CamRecording(cap)
+            rec = CamRecording(cap, output_folder)
         #検知する動体がある場合にビデオを保存する
-        flag = rec.Recording(frame,True)
+        flag = rec.Recording(frame)
     else:
-        flag = rec.Recording(frame,False)
+        flag = rec.Recording()
 
     # 結果を出力
     cv2.imshow("Frame", frame)
