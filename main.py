@@ -1,14 +1,21 @@
+#configファイルの読み込み
 import configparser
 # ファイルの存在チェック用モジュール
 import os
 import errno
+#モジュールのバージョンチェック
 from distutils.version import StrictVersion
-
+#opencv
 import cv2
+#zipファイル圧縮用
+import zipfile
+#フォルダ削除用
+import shutil
 
+#セルフモジュール
 from util import CamSetting
 from util import CamRecording
-
+from mailing import SendMail
 
 #=======#configファイルの読み込み#=======#
 config = configparser.ConfigParser()
@@ -24,7 +31,7 @@ if not(filepath == '' or 'None'):
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filepath)
 output_folder = config['SETTING']['OutputFolder']
 if not os.path.exists(output_folder):
-    raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), output_folder)
+    os.mkdir(output_folder)
 kernel_size = config['SETTING']['MedianFilterKernelSize']
 
 #=======#configファイルの読み込み 終わり#=======#
@@ -91,3 +98,17 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+
+#生成された動画ファイルを圧縮する
+zip_filename = './output/new_comp.zip'
+with zipfile.ZipFile(zip_filename, 'w', compression=zipfile.ZIP_STORED) as new_zip:
+    for filepath in CamRecording.video_file:
+    #for filepath in CamRecording.video_file:
+        basename = os.path.basename(filepath)
+        new_zip.write(filepath, arcname=basename)
+
+#GmailでZipファイルを送信
+SendMail(zip_filename)
+
+#動画ファイルとZipファイルをディレクトリごと削除する
+shutil.rmtree('./output/')

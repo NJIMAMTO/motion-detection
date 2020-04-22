@@ -1,6 +1,6 @@
 import cv2
-
 import uuid
+from io import BytesIO
 
 def CamSetting(filepath=None):
     if filepath is None:
@@ -21,15 +21,25 @@ def CamSetting(filepath=None):
     return cap
 
 class CamRecording():
+    video_file = []
     def __init__(self, camera, output_folder):
         # 動画ファイル保存用の設定
         fps = int(camera.get(cv2.CAP_PROP_FPS))                    # カメラのFPSを取得
         w = int(camera.get(cv2.CAP_PROP_FRAME_WIDTH))              # カメラの横幅を取得
         h = int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT))             # カメラの縦幅を取得
-        fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')        # 動画保存時のfourcc設定（mp4用）
+        fourcc = cv2.VideoWriter_fourcc('W', 'M', 'V', '1')
+        #fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')        # 動画保存時のfourcc設定（mp4用）
+        
+        #生成されたビデオの一覧を追加しておく
         file_name = str(uuid.uuid4())[:6]
-        self.video = cv2.VideoWriter(output_folder + file_name + '.mp4', fourcc, fps, (w, h))  # 動画の仕様（ファイル名、fourcc, FPS, サイズ
-
+        self.video_file = output_folder + file_name + '.wmv'
+        self.__class__.video_file.append(self.video_file)
+        
+        self.video = cv2.VideoWriter(self.video_file,
+                                       fourcc, 
+                                       fps,
+                                       (w, h))  # 動画の仕様（ファイル名、fourcc, FPS, サイズ
+   
         self._counter = 0
 
     def Recording(self, frame=None):
