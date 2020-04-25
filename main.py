@@ -86,9 +86,9 @@ while True:
             #ビデオ保存用インスタンスの生成
             rec = CamRecording(cap, output_folder)
         #検知する動体がある場合にビデオを保存する
-        flag = rec.Recording(frame)
+        flag = rec.Recording(frame, True)
     else:
-        flag = rec.Recording()
+        flag = rec.Recording(frame, False)
 
     # 結果を出力
     cv2.imshow("Frame", frame)

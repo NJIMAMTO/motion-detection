@@ -1,12 +1,11 @@
 import cv2
 import uuid
-from io import BytesIO
 
-def CamSetting(filepath=None):
+def CamSetting(video_name=None):
     if filepath is None:
         cap = cv2.VideoCapture(0)
     else:
-        cap = cv2.VideoCapture(filepath)
+        cap = cv2.VideoCapture(video_name)
     
     #画像サイズを変更する(MAX:720×480)
     width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
@@ -42,8 +41,8 @@ class CamRecording():
    
         self._counter = 0
 
-    def Recording(self, frame=None):
-        if frame is not None:
+    def Recording(self, frame, recordable=False):
+        if recordable is True:
             self.video.write(frame)
             self._counter = 0
             return 0
@@ -51,9 +50,14 @@ class CamRecording():
             self._counter += 1
             #動体検知がなにも検知しない状態が
             #30フレーム続いたら録画を終了する
-            if self._counter > 30:
+            if self._counter == 30:
                 self.video.release()
                 return -1
+            elif self._counter > 30:
+                return -1 #録画終了状態を継続
+            else:
+                self.video.write(frame)
+                return 0
             return 0
 
 

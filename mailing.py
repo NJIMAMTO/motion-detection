@@ -20,6 +20,7 @@ password = config['MAILSETTING']['password']
 to_email = config['MAILSETTING']['to_email']
 from_email = config['MAILSETTING']['from_email']
 #=======#configファイルの読み込み 終わり#=======#
+
 def SendMail(zipfile):
     # MIMEの作成
     msg = MIMEMultipart()
