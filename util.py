@@ -2,7 +2,7 @@ import cv2
 import uuid
 
 def CamSetting(video_name=None):
-    if filepath is None:
+    if video_name is None:
         cap = cv2.VideoCapture(0)
     else:
         cap = cv2.VideoCapture(video_name)
